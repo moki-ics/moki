@@ -2,6 +2,7 @@
 
 digitalbond__url="https://www.digitalbond.com/wp-content/uploads/2011/02"
 snort_url="http://www.snort.org/dl/snort-current"
+background_uri="http://<background_uri_here>"
 
 ##################################################
 # Parse Inputs
@@ -204,6 +205,13 @@ if $loop ; then
     done
 #*#*# Do The Same Thing Above For $server_address #*#*#*
 fi
+
+##################################################
+# Install Custom Backgroun Image
+##################################################
+echo "# Changing custome background image"
+wget -O $HOME/.cache/gnome-contol-center/backgrounds/moki $background_uri
+gsettings set org.gnome.desktop.background picture-uri "file:///root/.cache/gnome-control-center/backgrounds/moki
 
 ##################################################
 # Cleanup
