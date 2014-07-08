@@ -3,7 +3,6 @@
 ## Add Official Kali Linux Repositories
 echo "## Regular repositories
 deb http://http.kali.org/kali kali main non-free contrib
-deb http://security.kali.org/kali-security kali/updates main contrib non-free
 ## Source repositories
 deb-src http://http.kali.org/kali main non-free contrib
 deb-src http://security.kali.org/kali-security kali/updates main contrib non-free" >> /etc/apt/sources.list
