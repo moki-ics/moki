@@ -210,8 +210,8 @@ fi
 # Install Custom Backgroun Image
 ##################################################
 echo "# Changing custome background image"
-wget -O $HOME/usr/share/backgrounds/gnome/moki.jpg $background_uri
-gsettings set org.gnome.desktop.background picture-uri "file:///root/usr/share/backgrounds/gnome/moki.jpg"
+wget -O /usr/share/backgrounds/gnome/moki.jpg $background_uri
+gsettings set org.gnome.desktop.background picture-uri "file:///usr/share/backgrounds/gnome/moki.jpg"
 
 ##################################################
 # Cleanup
