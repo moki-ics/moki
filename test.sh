@@ -2,7 +2,7 @@
 
 digitalbond__url="https://www.digitalbond.com/wp-content/uploads/2011/02"
 snort_url="http://www.snort.org/dl/snort-current"
-background_uri="http://<background_uri_here>"
+background_uri="http://th04.deviantart.net/fs70/PRE/f/2014/189/9/8/kali_moki_by_mokotoy-d7ptpbi.jpg"
 
 ##################################################
 # Parse Inputs
@@ -210,8 +210,8 @@ fi
 # Install Custom Backgroun Image
 ##################################################
 echo "# Changing custome background image"
-wget -O $HOME/.cache/gnome-contol-center/backgrounds/moki $background_uri
-gsettings set org.gnome.desktop.background picture-uri "file:///root/.cache/gnome-control-center/backgrounds/moki
+wget -O $HOME/usr/share/backgrounds/gnome/moki.jpg $background_uri
+gsettings set org.gnome.desktop.background picture-uri "file:///root/usr/share/backgrounds/gnome/moki.jpg"
 
 ##################################################
 # Cleanup
