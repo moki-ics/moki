@@ -39,14 +39,6 @@ case "$1" in
         edit_conf=true
         shift
         ;;
-    --echo )
-        echo=true
-        shift
-        ;;
-    --loop )
-        loop=true
-        shift
-        ;;
     * ) break
         ;;
    esac
@@ -82,6 +74,10 @@ if $install_snort ; then
     ./snort*/configure
     make
     make install
+    ## add the source.list
+    ## do all the updates
+    ## install snort snort-common snort-common-libraries
+    ## That should be it!
 fi
 
 
@@ -96,34 +92,49 @@ fi
 
 
 if $edit_conf ; then
+    correctIP=false
+    regex="\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b"
     echo "# Editing Configuration File... "
-    # Input User's Client and Server IP Addresses
-    echo "# Please enter Client Address (CIDR Notation: X.X.X.X/XX) "
+## Receives Client IP address input from user
+    echo "Please Enter Client IP Address (X.X.X.X)"
     read client_address
-    echo "# Please enter Server Address (CIDR Notation: X.X.X.X/XX) "
+    CHECK="$(echo $client_address | egrep $regex)"
+    if [[ "$?" -eq 0 ]] ; then
+        correctIP=true
+        echo "You entered the correct IP Address. Good Job!"
+    fi
+
+    while [ $correctIP != true ] 
+    do
+        echo "Incorrect IP, Please re-nter Client IP Address (X.X.X.X)"
+          read client_address
+          CHECK="$(echo $client_address | egrep $regex)"
+          if [[ "$?" -eq 0 ]] ; then
+            correctIP=true
+            echo "You finally did something right!"
+          fi
+    done
+## Receives Server IP address input from user
+    echo "Please Enter Server IP Address (X.X.X.X)"
     read server_address
+    CHECK="$(echo $server_address | egrep $regex)"
+    if [[ "$?" -eq 0 ]] ; then
+        correctIP=true
+        echo "You entered the correct IP Address. Good Job!"
+    fi
+
+    while [ $correctIP != true ] 
+    do
+        echo "Incorrect IP, Please re-nter Server IP Address (X.X.X.X)"
+          read server_address
+          CHECK="$(echo $server_address | egrep $regex)"
+          if [[ "$?" -eq 0 ]] ; then
+            correctIP=true
+            echo "You finally did something right!"
+          fi
+    done
     
-    # Checks for user entry. If empty, default is "any"
-    if [[ -z "$client_address" ]] ; then
-        client_address="any"
-        echo "You didn't enter shit. Default is $client_address"
-    else
-        echo "You entered: $client_address"
-    fi
-    if [[ -z "$server_address" ]] ; then
-        server_address="any"
-        echo "Default Server Address is $server_address "
-    else
-        echo "You entered: $server_address"
-    fi
-
-    # Append to configuration file
-
-    ### Test/Debugging Script. Remove Later
-    echo "Current Directory "
-    pwd
-
-
+## Updates Snort Configuration file
   echo -e "#################
 # SCADA Variables
 #################
@@ -143,67 +154,9 @@ include \$RULE_PATH/dnp3*.rules
 include \$RULE_PATH/enip_cip*.rules
 include \$RULE_PATH/vulnerability*.rules" >> $HOME/Desktop/test/test.conf
 ## Test cat script, comment out later
-
 ## Real cat script, uncommnet later
 # >> /etc/snort/snort.conf
 
-fi
-
-if $echo ; then
-    echo "# Testing echo command in a file... "
-    regex="\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b"
-    # Input User's Client and Server IP Addresses
-    echo -n "# Please enter Client Address (CIDR Notation: X.X.X.X) "
-    read client_address
-
-    CHECK="$(echo $client_address | egrep $regex)"
-    if [[ "$?" -eq 0 ]] ; then
-      echo -n "Correct IP address"
-    else
-      echo -n "Incorrect IP address, please try again: "
-    fi
-
-    echo "# Please enter Server Address (CIDR Notation: X.X.X.X/XX) "
-    read server_address
-    # Checks for user entry. If empty, default is "any"
-    if [[ -z "$client_address" ]] ; then
-        client_address="any"
-        echo "You didn't enter shit. Default is $client_address"
-    else
-        echo "You entered: $client_address"
-    fi
-    if [[ -z "$server_address" ]] ; then
-        server_address="any"
-        echo "Default Server Address is $server_address "
-    else
-        echo "You entered: $server_address "   
-    fi
-
-fi 
-
-if $loop ; then
-    correctIP=false
-    regex="\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b"
-
-    echo "Please Enter Client IP Address (X.X.X.X)"
-    read client_address
-    CHECK="$(echo $client_address | egrep $regex)"
-    if [[ "$?" -eq 0 ]] ; then
-        correctIP=true
-        echo "You entered the correct IP Address. Good Job!"
-    fi
-
-    while [ $correctIP != true ] 
-    do
-        echo "Incorrect IP, Please re-nter Client IP Address (X.X.X.X)"
-          read client_address
-          CHECK="$(echo $client_address | egrep $regex)"
-          if [[ "$?" -eq 0 ]] ; then
-            correctIP=true
-            echo "You finally did something right!"
-          fi
-    done
-#*#*# Do The Same Thing Above For $server_address #*#*#*
 fi
 
 ##################################################
