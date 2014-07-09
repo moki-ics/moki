@@ -1,20 +1,18 @@
 #!/bin/bash
 
 digitalbond__url="https://www.digitalbond.com/wp-content/uploads/2011/02"
-snort_url="http://www.snort.org/dl/snort-current"
-background_uri="http://fc00.deviantart.net/fs71/f/2014/189/4/f/moki_by_mokotoy-d7ptvix.jpg"
+#snort_url="http://www.snort.org/dl/snort-current"
+background_url="http://fc00.deviantart.net/fs71/f/2014/189/4/f/moki_by_mokotoy-d7ptvix.jpg"
 
 ##################################################
 # Parse Inputs
 ##################################################
 VERBOSE=false
-
 do_update=false
 install_snort=false
 download_rules=false
 edit_conf=false
-echo=false
-loop=false
+
 
 ### Check Inputs ###
 while true; do
@@ -25,9 +23,13 @@ case "$1" in
         ;;
     --all )
         do_update=true
+        install_snort=true
+        download_rules=true
+        edit_conf=true
         shift
         ;;
     --snort | --Snort )
+        do_update=true
         install_snort=true
         shift
         ;;
@@ -61,23 +63,26 @@ sudo ls >/dev/null
 # Do Each Install Option
 ##################################################
 if $do_update ; then
+    echo "# Adding Official Kali Linux Repositories... " 
+    echo "## Regular repositories
+    deb http://http.kali.org/kali kali main non-free contrib
+    ## Source repositories
+    deb-src http://http.kali.org/kali main non-free contrib
+    deb-src http://security.kali.org/kali-security kali/updates main contrib non-free" >> /etc/apt/sources.list
+    
     echo "# Updating apt-get & Upgrading all packages... "
-    apt-get -y --force-yes update
-    apt-get -y --force-yes upgrade
+    apt-get clean
+    apt-get update -y --force-yes
+    apt-get upgrade -y --force-yes
+    apt-get dist-upgrade -y --force-yes
 fi
 
 
 if $install_snort ; then
-    echo "# Installing Snort..."
-    wget $snort_url/snort-2.9.6.1.tar.gz
-    tar zxf snort*.tar.gz
-    ./snort*/configure
-    make
-    make install
-    ## add the source.list
-    ## do all the updates
-    ## install snort snort-common snort-common-libraries
-    ## That should be it!
+    echo "# Installing Snort... "
+    apt-get install -y snort \
+    snort-common \
+    snort-common-libraries
 fi
 
 
@@ -95,7 +100,8 @@ if $edit_conf ; then
     correctIP=false
     regex="\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b"
     echo "# Editing Configuration File... "
-## Receives Client IP address input from user
+    
+    ## Receives Client IP address input from user
     echo "Please Enter Client IP Address (X.X.X.X)"
     read client_address
     CHECK="$(echo $client_address | egrep $regex)"
@@ -103,7 +109,7 @@ if $edit_conf ; then
         correctIP=true
         echo "You entered the correct IP Address. Good Job!"
     fi
-
+    
     while [ $correctIP != true ] 
     do
         echo "Incorrect IP, Please re-nter Client IP Address (X.X.X.X)"
@@ -114,7 +120,8 @@ if $edit_conf ; then
             echo "You finally did something right!"
           fi
     done
-## Receives Server IP address input from user
+    
+    ## Receives Server IP address input from user
     echo "Please Enter Server IP Address (X.X.X.X)"
     read server_address
     CHECK="$(echo $server_address | egrep $regex)"
@@ -134,8 +141,8 @@ if $edit_conf ; then
           fi
     done
     
-## Updates Snort Configuration file
-  echo -e "#################
+    ## Updates Snort Configuration file
+    echo -e "#################
 # SCADA Variables
 #################
 ipvar MODBUS_CLIENT $client_address
@@ -152,18 +159,15 @@ portvar DNP3_PORTS 20000
 include \$RULE_PATH/modbus*.rules
 include \$RULE_PATH/dnp3*.rules
 include \$RULE_PATH/enip_cip*.rules
-include \$RULE_PATH/vulnerability*.rules" >> $HOME/Desktop/test/test.conf
-## Test cat script, comment out later
-## Real cat script, uncommnet later
-# >> /etc/snort/snort.conf
+include \$RULE_PATH/vulnerability*.rules" >> /etc/snort/snort.conf
 
 fi
 
 ##################################################
 # Install Custom Backgroun Image
 ##################################################
-echo "# Changing custome background image"
-wget -O /usr/share/backgrounds/gnome/moki.jpg $background_uri
+echo "# Changing custom background image... "
+wget -O /usr/share/backgrounds/gnome/moki.jpg $background_url
 gsettings set org.gnome.desktop.background picture-uri "file:///usr/share/backgrounds/gnome/moki.jpg"
 
 ##################################################
