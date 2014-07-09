@@ -2,7 +2,7 @@
 
 digitalbond__url="https://www.digitalbond.com/wp-content/uploads/2011/02"
 snort_url="http://www.snort.org/dl/snort-current"
-background_uri="http://th04.deviantart.net/fs70/PRE/f/2014/189/9/8/kali_moki_by_mokotoy-d7ptpbi.jpg"
+background_uri="http://fc00.deviantart.net/fs71/f/2014/189/4/f/moki_by_mokotoy-d7ptvix.jpg"
 
 ##################################################
 # Parse Inputs
