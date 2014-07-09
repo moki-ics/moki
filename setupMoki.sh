@@ -156,10 +156,10 @@ portvar DNP3_PORTS 20000
 ##############
 # SCADA Rules
 ##############
-include \$RULE_PATH/modbus*.rules
-include \$RULE_PATH/dnp3*.rules
-include \$RULE_PATH/enip_cip*.rules
-include \$RULE_PATH/vulnerability*.rules" >> /etc/snort/snort.conf
+include \$RULE_PATH/modbus_1_2.rules
+include \$RULE_PATH/dnp3_1_2.rules
+include \$RULE_PATH/enip_cip_1_1.rules
+include \$RULE_PATH/vulnerability_1_5.rules" >> /etc/snort/snort.conf
 
 fi
 
