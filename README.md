@@ -7,17 +7,17 @@ This is a Bash Script that installs additional ICS/SCADA related tools to a Kali
 
 Current Tools Included:
 ----------------------
-  - Snort
+Snort 
   
-  - Digital Bond's Quickdraw SCADA Snort Rules
-  -- Modbus/TCP
-  -- EtherNet/IP
-  -- DNP3
+Digital Bond's Quickdraw SCADA Snort Rules
+  - Modbus/TCP
+  - EtherNet/IP
+  - DNP3
   
 
 Future Tools
 ------------
   - PLC Scan by Dmitry Efanov
   - CoDeSys exploit by Digital Bond
-  - 
+  
 
