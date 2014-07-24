@@ -8,10 +8,14 @@ background_url="http://fc00.deviantart.net/fs71/f/2014/189/4/f/moki_by_mokotoy-d
 # Parse Inputs
 ##################################################
 VERBOSE=false
+pre_install=false
+man_page=false
 do_update=false
 install_snort=false
 download_rules=false
 edit_conf=false
+post_install=false
+
 
 
 ### Check Inputs ###
@@ -21,24 +25,32 @@ case "$1" in
         VERBOSE=true;
         shift
         ;;
+    -h | --help )
+        man_page=true
+        shift
+        ;;
     --all )
+        pre_install=true
         do_update=true
         install_snort=true
         download_rules=true
         edit_conf=true
+        post_install=true
         shift
         ;;
     --snort | --Snort )
+        pre_install=true
         do_update=true
         install_snort=true
+        post_install=true
         shift
         ;;
-    --rules )
+    --db | --digitalbond )
+        # Select This Option if Snort is already installed
+        pre_install=true
         download_rules=true
-        shift
-        ;;
-    --conf )
         edit_conf=true
+        post_install=true
         shift
         ;;
     * ) break
@@ -46,18 +58,20 @@ case "$1" in
    esac
 done
 
-#### test folder in ~/ ####
-dir="$HOME/test"
-rm -rf "$dir"
-mkdir "$dir"
-if ! cd "$dir" ; then 
-    echo "-> Error: could not cd to \"$dir\"" >&2
-    exit 1
-fi
+if $pre_install ; then
+    #### test folder in ~/ ####
+    dir="$HOME/test"
+    rm -rf "$dir"
+    mkdir "$dir"
+    if ! cd "$dir" ; then 
+        echo "-> Error: could not cd to \"$dir\"" >&2
+        exit 1
+    fi
 
-########## Run this to get sudo access ###########
-echo "# Checking for sudo access... "
-sudo ls >/dev/null
+    ########## Run this to get sudo access ###########
+    echo "# Checking for sudo access... "
+    sudo ls >/dev/null
+fi 
 
 ##################################################
 # Do Each Install Option
@@ -163,31 +177,38 @@ include \$RULE_PATH/vulnerability_1_5.rules" >> /etc/snort/snort.conf
 
 fi
 
-##################################################
-# Install Custom Backgroun Image
-##################################################
-echo "# Changing custom background image... "
-wget -O /usr/share/backgrounds/gnome/moki.jpg $background_url
-gsettings set org.gnome.desktop.background picture-uri "file:///usr/share/backgrounds/gnome/moki.jpg"
+if $post_install ; then
+    ##################################################
+    # Install Custom Backgroun Image
+    ##################################################
+    echo "# Changing custom background image... "
+    wget -O /usr/share/backgrounds/gnome/moki.jpg $background_url
+    gsettings set org.gnome.desktop.background picture-uri "file:///usr/share/backgrounds/gnome/moki.jpg"
 
-##################################################
-# Cleanup
-##################################################
+    ##################################################
+    # Cleanup
+    ##################################################
 
-if true ; then
-    # Clean up after the installs.
-    echo "# Cleaning packages... "
-    sudo apt-get -y --force-yes clean
-    sudo apt-get -y --force-yes autoclean
-    sudo apt-get -y --force-yes autoremove
+    if true ; then
+        # Clean up after the installs.
+        echo "# Cleaning packages... "
+        sudo apt-get -y --force-yes clean
+        sudo apt-get -y --force-yes autoclean
+        sudo apt-get -y --force-yes autoremove
+    fi
+
+    ls -l
+    rm -rf "$dir"
+
+    ##################################################
+    # Finished Testing
+    ##################################################
+    echo "# "
+    echo "# All Done, Check the .conf file and rules directory"
+    echo "# "
 fi
 
-ls -l
-rm -rf "$dir"
+if false ; then
+    echo "False, man page here ... "
+fi
 
-##################################################
-# Finished Testing
-##################################################
-echo "# "
-echo "# All Done, Check the .conf file and rules directory"
-echo "# "
