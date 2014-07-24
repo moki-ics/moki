@@ -62,12 +62,12 @@ if $man_page ; then
     echo -e "Usage: setup.sh [options] \n \n
     Installs SCADA/ICS Tools Enhancement for Kali Linux Machine \n
     Options: \n
-        --all  \t\t\t\t\t Installs all tools in the toolbox. \n\n
-        --snort | --Snort \t\t\t Installs Snort. \n\n
-        --db | --digitalbond \t\t\t Installs Digital Bond's ICS Snort Rules. \n
-        \t\t\t\t\t Select this option if Snort is already installed. \n\n
-        -h | --help \t\t\t\t This manual page. \n\n
-        -v | --verbose \t\t\t\t Verbose."
+        --all  \t\t\t Installs all tools in the toolbox. \n
+        --snort | --Snort \t Installs Snort. \n
+        --db | --digitalbond \t Installs Digital Bond's ICS Snort Rules. \n
+        \t\t\t Select this option if Snort is already installed. \n
+        -h | --help \t\t This manual page. \n
+        -v | --verbose \t\t Verbose."
 fi
 
 if $pre_install ; then
