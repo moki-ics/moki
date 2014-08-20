@@ -16,7 +16,7 @@ download_rules=false
 edit_conf=false
 post_install=false
 
-
+## TEST - Github for MAC - TEST ##
 
 ### Check Inputs ###
 while true; do
