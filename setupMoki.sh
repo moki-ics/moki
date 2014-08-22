@@ -111,7 +111,8 @@ if $install_snort ; then
     snort-common-libraries
 fi
 
-
+# Downloads Quickdraw Snort Rules and Sample Traffic from Digital Bond's Website and puts the rules 
+# in snort's rules directory
 if $download_rules ; then
     echo "# Downloading rules... "
     wget --no-check-certificate https://www.digitalbond.com/wp-content/uploads/2011/02/quickdraw_4_3_1.zip
@@ -119,7 +120,13 @@ if $download_rules ; then
 
     # Copies Digital Bond's Quickdraw SCADA Snort rules to the rules directory
     cp {dnp3*.rules,modbus*.rules,enip_cip*.rules,vulnerability*.rules} /etc/snort/rules
+    
+    echo "# Downloading Traffic Samples from Digital Bond"
+    wget http://digitalbond.com/wp-content/uploads/2011/02/Quickdraw_PCAPS_4_0.zip
+    unzip Quickdraw_PCAPS_4_0.zip
+    cp Quickdraw_PCAPS_4_0 /Desktop
 fi
+
 
 
 if $edit_conf ; then
