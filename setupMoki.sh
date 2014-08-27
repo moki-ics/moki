@@ -15,6 +15,10 @@ install_snort=false
 download_rules=false
 edit_conf=false
 post_install=false
+install_plcscan=false
+install_wago=false
+install_modscan=false
+edit_ipvar_conf=false
 
 
 ### Check Inputs ###
