@@ -150,7 +150,7 @@ if $download_rules ; then
 	echo "# Downloading Script for testing Quickdraw Snort Rules"
 	wget --no-check-certificate https://raw.githubusercontent.com/mokotoy/moki/master/testSnortRules.sh
 	chmod +x testSnortRules.sh
-	cp testSnortRules /Desktop
+	cp testSnortRules.sh /Desktop
 fi
 
 
