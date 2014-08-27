@@ -125,15 +125,18 @@ if $download_rules ; then
     wget http://digitalbond.com/wp-content/uploads/2011/02/Quickdraw_PCAPS_4_0.zip
     unzip Quickdraw_PCAPS_4_0.zip
     cp Quickdraw_PCAPS_4_0 /Desktop
+	
+	echo "# Downloading Script for testing Quickdraw Snort Rules"
+	wget 
 fi
 
 
-# Configures Snort with Digital Bond's Quickdraw SCADA IDS Snort Rules
-if $edit_conf ; then
+# Configures Snort with Digital Bond's Quickdraw SCADA IDS Snort Rules using specific ipvar settings
+if $edit_ipvar_conf ; then
     correctIP=false
     regex="\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b"
     echo "# Editing Configuration File... "
-    
+
     ## Receives Client IP address input from user
     echo "Please Enter Client IP Address (X.X.X.X)"
     read client_address
@@ -173,7 +176,7 @@ if $edit_conf ; then
             echo "You finally did something right!"
           fi
     done
-    
+
     ## Updates Snort Configuration file
     echo -e "#################
 # SCADA Variables
@@ -194,6 +197,30 @@ include \$RULE_PATH/dnp3_1_2.rules
 include \$RULE_PATH/enip_cip_1_1.rules
 include \$RULE_PATH/vulnerability_1_5.rules" >> /etc/snort/snort.conf
 
+fi
+
+# Configures Snort with Digital Bond's Quickdraw SCADA IDS Snort Rules using default 
+if $edit_conf ; then
+
+    ## Updates Snort Configuration file
+    echo -e "#################
+# SCADA Variables
+#################
+ipvar MODBUS_CLIENT $client_address
+ipvar MODBUS_SERVER $server_address
+ipvar ENIP_CLIENT $client_address
+ipvar ENIP_SERVER $server_address
+ipvar DNP3_CLIENT $client_address
+ipvar DNP3_SERVER $server_address
+portvar DNP3_PORTS 20000
+
+##############
+# SCADA Rules
+##############
+include $RULE_PATH/modbus_1_2.rules
+include $RULE_PATH/dnp3_1_2.rules
+include $RULE_PATH/enip_cip_1_1.rules
+include $RULE_PATH/vulnerability_1_5.rules" >> /etc/snort/snort.conf
 fi
 
 # Installs custom background and cleans up tmp folder
