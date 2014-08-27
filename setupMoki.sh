@@ -16,7 +16,6 @@ download_rules=false
 edit_conf=false
 post_install=false
 
-## TEST - Github for MAC - TEST ##
 
 ### Check Inputs ###
 while true; do
@@ -88,6 +87,7 @@ fi
 ##################################################
 # Do Each Install Option
 ##################################################
+# Adds Official Kali Linux Repositories and update & upgrades system
 if $do_update ; then
     echo "# Adding Official Kali Linux Repositories... " 
     echo "## Regular repositories
@@ -103,7 +103,7 @@ if $do_update ; then
     apt-get dist-upgrade -y --force-yes
 fi
 
-
+# Installs Snort using apt-get
 if $install_snort ; then
     echo "# Installing Snort... "
     apt-get install -y snort \
@@ -128,7 +128,7 @@ if $download_rules ; then
 fi
 
 
-
+# Configures Snort with Digital Bond's Quickdraw SCADA IDS Snort Rules
 if $edit_conf ; then
     correctIP=false
     regex="\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b"
@@ -196,6 +196,7 @@ include \$RULE_PATH/vulnerability_1_5.rules" >> /etc/snort/snort.conf
 
 fi
 
+# Installs custom background and cleans up tmp folder
 if $post_install ; then
     ##################################################
     # Install Custom Backgroun Image
