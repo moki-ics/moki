@@ -318,7 +318,7 @@ if $post_install ; then
     echo "# "
     echo "# All Done, Check the .conf file and rules directory"
     echo "# "
-	echo "# Go to Desktop and execute ./testSnortRules.sh to test Snort Rules"
+	echo "# Go to Desktop and execute ~/Desktop/testSnortRules.sh to test Snort Rules"
 	echo "# "
 fi
 
