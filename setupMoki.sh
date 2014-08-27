@@ -83,9 +83,9 @@ if $man_page ; then
         --snort | --Snort \t Installs Snort. \n
         --db | --digitalbond \t Installs Digital Bond's ICS Snort Rules. \n
         \t\t\t Select this option if Snort is already installed. \n
-		--plcsan \t\t Installs PLCScan \n
-		--wago \t\t\t Installs Wago Exploit on 3S CoDeSys Runtime software \n
-		--modscan \t\t Installs ModScan \n
+	--plcsan \t\t Installs PLCScan \n
+	--wago \t\t\t Installs Wago Exploit on 3S CoDeSys Runtime software \n
+	--modscan \t\t Installs ModScan \n
         -h | --help \t\t This manual page. \n
         -v | --verbose \t\t Verbose."
 fi
