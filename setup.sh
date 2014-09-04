@@ -204,10 +204,6 @@ if $snort_test ; then
         echo "-> Error: snort not installed" >&2
         exit 1
     fi
-    if ! which tcpreplay; then
-        echo "-> Error: tcpreplay not installed" >&2
-        exit 1
-    fi
     if [ ! -f $pcap_modbus ]; then
         echo "-> Error: $pcap_modbus missing" >&2
         exit 1
