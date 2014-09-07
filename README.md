@@ -1,4 +1,4 @@
-moki
+Moki Linux
 ====
 
 Moki Distribution - ICS/SCADA Tools 
