@@ -1,13 +1,13 @@
 #!/bin/bash
 
-url_moki_base="https://raw.githubusercontent.com/mokotoy/moki/master"
+url_moki_base="https://raw.githubusercontent.com/moki-ics/moki/master"
 url_background="$url_moki_base/images/moki.jpg"
 url_quickdraw="https://www.digitalbond.com/wp-content/uploads/2011/02/quickdraw_4_3_1.zip"
 url_quickdraw_pcap="http://digitalbond.com/wp-content/uploads/2011/02/Quickdraw_PCAPS_4_0.zip"
 url_modscan="http://modscan.googlecode.com/svn/trunk/modscan.py"
 url_plcscan_base="http://plcscan.googlecode.com/svn/trunk"
 url_codesys_base="$url_moki_base/mirror/digital-bond-codesys"
-git_s7metasploit="https://github.com/mokotoy/s7-metasploit-modules.git"
+git_s7metasploit="https://github.com/moki-ics/s7-metasploit-modules.git"
 
 moki_bin_directory="/root/Desktop"
 moki_data_dir="/usr/local/share/moki"
