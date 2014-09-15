@@ -14,6 +14,9 @@ moki_data_dir="/usr/local/share/moki"
 meta_module_dir="/usr/share/metasploit-framework/modules/exploits"
 kali_directory_path="/usr/share/desktop-directories/Kali.directory"
 moki_directory_path="/usr/share/desktop-directories/Moki.directory"
+bin_directory="/usr/bin"
+desktop_apps="/usr/share/applications"
+nmap_scripts="/usr/share/nmap/scripts"
 
 wget="wget --no-check-certificate"
 
@@ -112,6 +115,14 @@ if [ ! -d "$moki_data_dir" ]; then
     echo "# Making $moki_data_dir ... "
     mkdir "$moki_data_dir"
 fi
+
+########## Make Moki Desktop Directory File #######
+cat >> $moki_directory_path << "EOF"
+[Desktop Entry]
+Name=Moki ICS Tools
+Type=Directory
+Icon=k.png
+EOF
 
 ########## Update software repositories ###########
 if $do_update ; then
@@ -249,19 +260,36 @@ fi
 ##################################################
 if $plcscan_install ; then
     echo "# Installing PLCScan... "
-    if ! $wget $url_plcscan_base/plcscan.py -O $moki_bin_directory/plcscan.py; then
+    if ! $wget $url_plcscan_base/plcscan.py -O $bin_directory/plcscan.py; then
         echo "-> Error: could not get $url_plcscan_base/plcscan.py" >&2
         exit 1
     fi
-    if ! $wget $url_plcscan_base/modbus.py -O $moki_bin_directory/modbus.py; then
+    if ! $wget $url_plcscan_base/modbus.py -O $bin_directory/modbus.py; then
         echo "-> Error: could not get $url_plcscan_base/modbus.py" >&2
         exit 1
     fi
-    if ! $wget $url_plcscan_base/s7.py -O $moki_bin_directory/s7.py; then
+    if ! $wget $url_plcscan_base/s7.py -O $bin_directory/s7.py; then
         echo "-> Error: could not get $url_plcscan_base/s7.py" >&2
         exit 1
     fi
-    echo "# To execute: $> Python plcscan.py"
+	chmod +x $bin_directory/plcscan.py
+	vim -c ':set ff=unix|wq' $bin_directory/plcscan.py
+	sed -i '1s/^/#!\/usr\/bin\/env python\n/' $bin_directory/plcscan.py
+	ln -s $bin_directory/plcscan.py $bin_directory/plcscan
+	cat >> $desktop_apps/plcscan.desktop << "EOF"
+[Desktop Entry]
+Name=plcscan
+Encoding=UTF-8
+Exec=sh -c "plcscan;${SHELL:-bash}"
+Icon=kali-menu.png
+StartupNotify=false
+Terminal=true
+Type=Application
+Categories=Moki;Kali;01-09-service-fingerprinting;top10;
+X-Kali-Package=plcscan
+EOF
+
+    echo "# To execute: $> plcscan"
 fi
 
 
@@ -270,19 +298,52 @@ fi
 ##################################################
 if $codesys_install ; then
     echo "# Installing Wago Exploit... "
-    if ! $wget $url_codesys_base/codesys-shell.py -O $moki_bin_directory/codesys-shell.py; then
+    if ! $wget $url_codesys_base/codesys-shell.py -O $bin_directory/codesys-shell.py; then
         echo "-> Error: could not get $url_codesys_base/codesys-shell.py" >&2
         exit 1
     fi
-    if ! $wget $url_codesys_base/codesys-transfer.py -O $moki_bin_directory/codesys-transfer.py; then
+    if ! $wget $url_codesys_base/codesys-transfer.py -O $bin_directory/codesys-transfer.py; then
         echo "-> Error: could not get $url_codesys_base/codesys-transfer.py" >&2
         exit 1
     fi
-    if ! $wget $url_codesys_base/codesys.nse -O $moki_bin_directory/codesys.nse; then
+    if ! $wget $url_codesys_base/codesys.nse -O $nmap_scripts/codesys.nse; then
         echo "-> Error: could not get $url_codesys_base" >&2
         exit 1
     fi
-    echo "# To execute: $> Python codesys-shell.py"
+	chmod +x {$bin_directory/codesys-shell.py,$bin_directory/codesys-transfer.py}
+	vim -c ':set ff=unix|wq' $bin_directory/codesys-shell.py
+	vim -c ':set ff=unix|wq' $bin_directory/codesys-transfer.py
+	sed -i '1s/^/#!\/usr\/bin\/env python\n/' $bin_directory/codesys-shell.py
+	sed -i '1s/^/#!\/usr\/bin\/env python\n/' $bin_directory/codesys-transfer.py
+	ln -s $bin_directory/codesys-shell.py $bin_directory/codesys-shell
+	ln -s $bin_directory/codesys-transfer.py $bin_directory/codesys-transfer
+	cat >> $desktop_apps/codesys-shell.desktop << "EOF"
+[Desktop Entry]
+Name=codesys-shell
+Encoding=UTF-8
+Exec=sh -c "codesys-shell;${SHELL:-bash}"
+Icon=kali-menu.png
+StartupNotify=false
+Terminal=true
+Type=Application
+Categories=Moki;Kali;06-04-network-exploitation;top10;
+X-Kali-Package=codesys-shell
+EOF
+
+	cat >> $desktop_apps/codesys-transfer.desktop << "EOF"
+[Desktop Entry]
+Name=codesys-transfer
+Encoding=UTF-8
+Exec=sh -c "codesys-transfer;${SHELL:-bash}"
+Icon=kali-menu.png
+StartupNotify=false
+Terminal=true
+Type=Application
+Categories=Moki;Kali;06-04-network-exploitation;08-02-tunneling;top10;
+X-Kali-Package=codesys-transfer
+EOF	
+
+    echo "# To execute: $> codesys-shell or codesys-transfer"
 fi
 
 
@@ -291,12 +352,26 @@ fi
 ##################################################
 if $modscan_install ; then
     echo "# Installing ModScan... "
-    if ! $wget $url_modscan -O $moki_bin_directory/modscan.py; then
+    if ! $wget $url_modscan -O $bin_directory/modscan.py; then
         echo "-> Error: could not get $url_modscan" >&2
         exit 1
     fi
-    chmod +x $moki_bin_directory/modscan.py
-    echo "# To execute: $> Python modscan.py"
+    chmod +x $bin_directory/modscan.py
+	ln -s $bin_directory/modscan.py $bin_directory/modscan
+	cat >> $desktop_apps/modscan.desktop << "EOF"
+[Desktop Entry]
+Name=modscan
+Encoding=UTF-8
+Exec=sh -c "modscan;${SHELL:-bash}"
+Icon=kali-menu.png
+StartupNotify=false
+Terminal=true
+Type=Application
+Categories=Moki;Kali;01-09-service-fingerprinting;top10;
+X-Kali-Package=modscan
+EOF
+
+    echo "# To execute: $>  modscan"
 fi
 
 
