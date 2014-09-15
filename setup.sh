@@ -329,7 +329,7 @@ Type=Application
 Categories=Moki;Kali;06-04-network-exploitation;top10;
 X-Kali-Package=codesys-shell
 EOF
-
+	
 	cat >> $desktop_apps/codesys-transfer.desktop << "EOF"
 [Desktop Entry]
 Name=codesys-transfer
@@ -341,7 +341,7 @@ Terminal=true
 Type=Application
 Categories=Moki;Kali;06-04-network-exploitation;08-02-tunneling;top10;
 X-Kali-Package=codesys-transfer
-EOF	
+EOF
 
     echo "# To execute: $> codesys-shell or codesys-transfer"
 fi
