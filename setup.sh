@@ -429,5 +429,5 @@ rm -rf "$dir"
 # finished
 ##################################################
 echo "# "
-echo "# All Done!"
+echo "# All Done! Reboot Required for Desktop Items to Take Effect"
 echo "# "
