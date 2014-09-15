@@ -386,7 +386,7 @@ if $s7metasploit_install ; then
         exit 1
     fi
     mkdir -p $meta_module_dir/simatic
-    if ! mv s7-metasploit-modules/*.rb "$meta_module_dir"; then
+    if ! mv s7-metasploit-modules/*.rb "$meta_module_dir/simatic"; then
         echo "-> Error: could not put files into $meta_module_dir" >&2
         exit 1
     fi
