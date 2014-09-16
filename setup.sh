@@ -18,7 +18,8 @@ bin_directory="/usr/bin"
 desktop_apps="/usr/share/applications"
 nmap_scripts="/usr/share/nmap/scripts"
 
-wget="wget --no-check-certificate"
+wget="wget --no-check-certificate --quiet"
+add_to_moki="xdg-desktop-menu install --novendor --mode system $kali_directory_path $moki_directory_path"
 
 ##################################################
 # Parse Inputs
@@ -117,7 +118,7 @@ if [ ! -d "$moki_data_dir" ]; then
 fi
 
 ########## Make Moki Desktop Directory File #######
-cat >> $moki_directory_path << "EOF"
+cat > "$moki_directory_path" << "EOF"
 [Desktop Entry]
 Name=Moki ICS Tools
 Type=Directory
@@ -140,7 +141,7 @@ EOF
     fi
 
     echo "# Updating apt-get & Upgrading all packages... "
-    apt-get clean
+    apt-get clean 2>/dev/null 1>/dev/null
     apt-get update -y --force-yes
     apt-get upgrade -y --force-yes
     apt-get dist-upgrade -y --force-yes
@@ -204,7 +205,7 @@ EOF
     if [ ! -d $moki_data_dir/pcap ]; then
         echo "# Installing SCADA PCAP samples from Digital Bond to $moki_data_dir/pcap"
         $wget $url_quickdraw_pcap -O pcap.zip
-        unzip pcap.zip -d $moki_data_dir/pcap
+        unzip pcap.zip -d $moki_data_dir/pcap 2>/dev/null 1>/dev/null
     fi
 fi
 
@@ -272,11 +273,11 @@ if $plcscan_install ; then
         echo "-> Error: could not get $url_plcscan_base/s7.py" >&2
         exit 1
     fi
-	chmod +x $bin_directory/plcscan.py
-	vim -c ':set ff=unix|wq' $bin_directory/plcscan.py
-	sed -i '1s/^/#!\/usr\/bin\/env python\n/' $bin_directory/plcscan.py
-	ln -s $bin_directory/plcscan.py $bin_directory/plcscan
-	cat >> $desktop_apps/plcscan.desktop << "EOF"
+    vim -c ':set ff=unix|wq' $bin_directory/plcscan.py
+    sed -i '1s/^/#!\/usr\/bin\/env python\n/' $bin_directory/plcscan.py
+    chmod +x $bin_directory/plcscan.py
+    ln -s $bin_directory/plcscan.py $bin_directory/plcscan
+    cat > "$desktop_apps/plcscan.desktop" << "EOF"
 [Desktop Entry]
 Name=plcscan
 Encoding=UTF-8
@@ -285,11 +286,10 @@ Icon=kali-menu.png
 StartupNotify=false
 Terminal=true
 Type=Application
-Categories=Moki;Kali;01-09-service-fingerprinting;top10;
+Categories=Moki;
 X-Kali-Package=plcscan
 EOF
-
-    echo "# To execute: $> plcscan"
+    $add_to_moki "$desktop_apps/plcscan.desktop"
 fi
 
 
@@ -310,14 +310,15 @@ if $codesys_install ; then
         echo "-> Error: could not get $url_codesys_base" >&2
         exit 1
     fi
-	chmod +x {$bin_directory/codesys-shell.py,$bin_directory/codesys-transfer.py}
-	vim -c ':set ff=unix|wq' $bin_directory/codesys-shell.py
-	vim -c ':set ff=unix|wq' $bin_directory/codesys-transfer.py
-	sed -i '1s/^/#!\/usr\/bin\/env python\n/' $bin_directory/codesys-shell.py
-	sed -i '1s/^/#!\/usr\/bin\/env python\n/' $bin_directory/codesys-transfer.py
-	ln -s $bin_directory/codesys-shell.py $bin_directory/codesys-shell
-	ln -s $bin_directory/codesys-transfer.py $bin_directory/codesys-transfer
-	cat >> $desktop_apps/codesys-shell.desktop << "EOF"
+    vim -c ':set ff=unix|wq' $bin_directory/codesys-shell.py
+    vim -c ':set ff=unix|wq' $bin_directory/codesys-transfer.py
+    sed -i '1s/^/#!\/usr\/bin\/env python\n/' $bin_directory/codesys-shell.py
+    sed -i '1s/^/#!\/usr\/bin\/env python\n/' $bin_directory/codesys-transfer.py
+    chmod +x $bin_directory/codesys-shell.py
+    ln -s $bin_directory/codesys-shell.py $bin_directory/codesys-shell
+    chmod +x $bin_directory/codesys-transfer.py
+    ln -s $bin_directory/codesys-transfer.py $bin_directory/codesys-transfer
+    cat > "$desktop_apps/codesys-shell.desktop" << "EOF"
 [Desktop Entry]
 Name=codesys-shell
 Encoding=UTF-8
@@ -326,11 +327,10 @@ Icon=kali-menu.png
 StartupNotify=false
 Terminal=true
 Type=Application
-Categories=Moki;Kali;06-04-network-exploitation;top10;
+Categories=Moki
 X-Kali-Package=codesys-shell
 EOF
-	
-	cat >> $desktop_apps/codesys-transfer.desktop << "EOF"
+    cat > "$desktop_apps/codesys-transfer.desktop" << "EOF"
 [Desktop Entry]
 Name=codesys-transfer
 Encoding=UTF-8
@@ -339,11 +339,11 @@ Icon=kali-menu.png
 StartupNotify=false
 Terminal=true
 Type=Application
-Categories=Moki;Kali;06-04-network-exploitation;08-02-tunneling;top10;
+Categories=Moki;
 X-Kali-Package=codesys-transfer
 EOF
-
-    echo "# To execute: $> codesys-shell or codesys-transfer"
+    $add_to_moki "$desktop_apps/codesys-shell.desktop"
+    $add_to_moki "$desktop_apps/codesys-transfer.desktop"
 fi
 
 
@@ -357,8 +357,8 @@ if $modscan_install ; then
         exit 1
     fi
     chmod +x $bin_directory/modscan.py
-	ln -s $bin_directory/modscan.py $bin_directory/modscan
-	cat >> $desktop_apps/modscan.desktop << "EOF"
+    ln -s $bin_directory/modscan.py $bin_directory/modscan
+    cat > "$desktop_apps/modscan.desktop" << "EOF"
 [Desktop Entry]
 Name=modscan
 Encoding=UTF-8
@@ -367,11 +367,10 @@ Icon=kali-menu.png
 StartupNotify=false
 Terminal=true
 Type=Application
-Categories=Moki;Kali;01-09-service-fingerprinting;top10;
+Categories=Moki;
 X-Kali-Package=modscan
 EOF
-
-    echo "# To execute: $>  modscan"
+    $add_to_moki "$desktop_apps/modscan.desktop"
 fi
 
 
@@ -385,7 +384,7 @@ if $s7metasploit_install ; then
         echo "-> Error: could not get $git_s7metasploit" >&2
         exit 1
     fi
-    mkdir -p $meta_module_dir/simatic
+    mkdir -p "$meta_module_dir/simatic"
     if ! mv s7-metasploit-modules/*.rb "$meta_module_dir/simatic"; then
         echo "-> Error: could not put files into $meta_module_dir" >&2
         exit 1
@@ -418,9 +417,9 @@ fi
 if true ; then
     # Clean up after the installs.
     echo "# Cleaning packages... "
-    sudo apt-get -y --force-yes clean
-    sudo apt-get -y --force-yes autoclean
-    sudo apt-get -y --force-yes autoremove
+    sudo apt-get -y --force-yes clean      2>/dev/null 1>/dev/null
+    sudo apt-get -y --force-yes autoclean  2>/dev/null 1>/dev/null
+    sudo apt-get -y --force-yes autoremove 2>/dev/null 1>/dev/null
 fi
 
 rm -rf "$dir"
