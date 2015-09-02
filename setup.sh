@@ -219,6 +219,10 @@ ipvar S7_CLIENT $HOME_NET
 EOF
     fi
     
+    # Change "ipvar HOME_NET any" to "ipvar HOME_NET 10.0.0.0/8" in /etc/snort/snort.conf
+    # Future work: identify if this can be a variable; 10.0.0.0/8 came from Snort error log
+    sed -i "s|ipvar HOME_NET any|ipvar HOME_NET 10.0.0.0/8" /etc/snort/snort.conf
+    
     if [ ! -d $moki_data_dir/pcap ]; then
         echo "# Installing SCADA PCAP samples from Digital Bond to $moki_data_dir/pcap"
       #  $wget $url_quickdraw_pcap -O pcap.zip
