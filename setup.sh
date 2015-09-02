@@ -188,13 +188,13 @@ if $snort_install ; then
 # Moki SCADA Variables
 #-----------------------------
 #Older version of Snort need these
-#ipvar MODBUS_CLIENT $HOME_NET
-#ipvar MODBUS_SERVER $HOME_NET
-#ipvar ENIP_CLIENT $HOME_NET
-#ipvar ENIP_SERVER $HOME_NET
-#ipvar DNP3_CLIENT $HOME_NET
-#ipvar DNP3_SERVER $HOME_NET
-#portvar DNP3_PORTS 20000
+ipvar MODBUS_CLIENT $HOME_NET
+ipvar MODBUS_SERVER $HOME_NET
+ipvar ENIP_CLIENT $HOME_NET
+ipvar ENIP_SERVER $HOME_NET
+ipvar DNP3_CLIENT $HOME_NET
+ipvar DNP3_SERVER $HOME_NET
+portvar DNP3_PORTS 20000
 ################################
 #Need to import these to Snort 2.9.7.3 and newer
 ipvar MODICON_CLIENT $HOME_NET
@@ -203,7 +203,6 @@ ipvar FINS_CLIENT $HOME_NET
 ipvar FINS_SERVER $HOME_NET
 ipvar S7_SERVER $HOME_NET
 ipvar S7_CLIENT $HOME_NET
-
 
 # Since all rules are now in local.rules this can be ignored
 # in Snort 2.9.7.3 and newer
@@ -218,14 +217,16 @@ ipvar S7_CLIENT $HOME_NET
 #include $RULE_PATH/vulnerability.rules
 ## [Moki end]
 EOF
-    #fi
-    #Need to change this to work with the git clone
-    #if [ ! -d $moki_data_dir/pcap ]; then
-     #   echo "# Installing SCADA PCAP samples from Digital Bond to $moki_data_dir/pcap"
+    fi
+    
+    if [ ! -d $moki_data_dir/pcap ]; then
+        echo "# Installing SCADA PCAP samples from Digital Bond to $moki_data_dir/pcap"
       #  $wget $url_quickdraw_pcap -O pcap.zip
        # unzip pcap.zip -d $moki_data_dir/pcap 2>/dev/null 1>/dev/null
-    #fi
-#fi
+      mkdir $moki_data_dir/pcap
+      cp *.pcap $moki_data_dir/pcap
+    fi
+fi
 
 if $snort_test ; then
     snort_rules_file="/etc/snort/snort.conf"
@@ -245,6 +246,8 @@ if $snort_test ; then
         echo "-> Error: snort not installed" >&2
         exit 1
     fi
+    cd $moki_data_dir/pcap
+    
     if [ ! -f $pcap_modbus_part1 ]; then
         echo "-> Error: $pcap_modbus_part1 missing" >&2
         exit 1
