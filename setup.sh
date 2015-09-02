@@ -198,7 +198,7 @@ portvar DNP3_PORTS 20000
 ################################
 #Need to import these to Snort 2.9.7.3 and newer
 ipvar MODICON_CLIENT $HOME_NET
-ipvar BACNET_CLIEN $HOME_NET
+ipvar BACNET_CLIENT $HOME_NET
 ipvar FINS_CLIENT $HOME_NET
 ipvar FINS_SERVER $HOME_NET
 ipvar S7_SERVER $HOME_NET
