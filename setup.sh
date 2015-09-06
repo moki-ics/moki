@@ -11,14 +11,13 @@ git_s7metasploit="https://github.com/moki-ics/s7-metasploit-modules.git"
 moki_bin_directory="/root/Desktop"
 moki_data_dir="/usr/local/share/moki"
 meta_module_dir="/usr/share/metasploit-framework/modules/exploits"
-kali_directory_path="/usr/share/desktop-directories/Kali.directory"
 moki_directory_path="/usr/share/desktop-directories/Moki.directory"
 bin_directory="/usr/bin"
 desktop_apps="/usr/share/applications"
 nmap_scripts="/usr/share/nmap/scripts"
 
 wget="wget --no-check-certificate --quiet"
-add_to_moki="xdg-desktop-menu install --novendor --mode system $kali_directory_path $moki_directory_path"
+add_to_moki="xdg-desktop-menu install --novendor --mode system $moki_directory_path"
 
 ##################################################
 # Parse Inputs
@@ -449,8 +448,7 @@ Icon=kali-menu.png
 StartupNotify=false
 Terminal=true
 Type=Application
-Categories=Moki;
-X-Kali-Package=plcscan
+Categories=Moki;ICS;
 EOF
     $add_to_moki "$desktop_apps/plcscan.desktop"
 fi
@@ -490,8 +488,7 @@ Icon=kali-menu.png
 StartupNotify=false
 Terminal=true
 Type=Application
-Categories=Moki
-X-Kali-Package=codesys-shell
+Categories=Moki;ICS;
 EOF
     cat > "$desktop_apps/codesys-transfer.desktop" << "EOF"
 [Desktop Entry]
@@ -502,8 +499,7 @@ Icon=kali-menu.png
 StartupNotify=false
 Terminal=true
 Type=Application
-Categories=Moki;
-X-Kali-Package=codesys-transfer
+Categories=Moki;ICS;
 EOF
     $add_to_moki "$desktop_apps/codesys-shell.desktop"
     $add_to_moki "$desktop_apps/codesys-transfer.desktop"
@@ -530,8 +526,7 @@ Icon=kali-menu.png
 StartupNotify=false
 Terminal=true
 Type=Application
-Categories=Moki;
-X-Kali-Package=modscan
+Categories=Moki;ICS;
 EOF
     $add_to_moki "$desktop_apps/modscan.desktop"
 fi
