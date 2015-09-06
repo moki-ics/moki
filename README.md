@@ -1,23 +1,33 @@
 Moki Linux
 ====
 
-Moki Distribution - ICS/SCADA Tools 
+Moki is a modification of Kali to encorporate various ICS/SCADA Tools scattered around the internet, to create a customized Kali Linux geared towards ICS/SCADA pentesting professionals. 
 
-This is a Bash Script that installs additional ICS/SCADA related tools to a Kali Linux box to create a customized Kali Linux geared towards ICS/SCADA pentesting professionals. 
+Some projects have been locally archived under `mirror`, as they are not maintained in a stable location externally.
 
-Current Tools Included:
-----------------------
-1) Snort 
-  
-2) Digital Bond's Quickdraw SCADA Snort Rules
-  - Modbus/TCP
-  - EtherNet/IP
-  - DNP3
-  
+Install
+-------
+To get and run the core bash script, from a fresh install of Kali, run:
 
-Future Tools
-------------
-  - PLC Scan by Dmitry Efanov
-  - CoDeSys exploit by Digital Bond
-  
+    wget https://goo.gl/Sn7Cwi -O setup.sh
+    sh setup.sh --help
 
+
+Current Tools
+-------------
+
+- [Quickdraw] SCADA Snort Rules from Digital Bond
+- [CoDeSys exploit] from Digital Bond
+- [PLC Scan] from Dmitry Efanov
+- [Modscan] from Mark Bristow
+- [Siemens S7 metasploit] modules from Dillon Beresford
+
+
+
+
+
+[CoDeSys exploit]: http://www.digitalbond.com/tools/basecamp/3s-codesys/
+[Quickdraw]: https://github.com/digitalbond/quickdraw
+[PLC Scan]: http://plcscan.googlecode.com
+[Modscan]: https://code.google.com/p/modscan/
+[Siemens S7 metasploit]: https://github.com/moki-ics/s7-metasploit-modules
