@@ -3,9 +3,8 @@
 url_moki_base="https://raw.githubusercontent.com/moki-ics/moki/master"
 url_background="$url_moki_base/images/moki.jpg"
 url_quickdraw="https://github.com/digitalbond/quickdraw"
-#url_quickdraw_pcap="http://digitalbond.com/wp-content/uploads/2011/02/Quickdraw_PCAPS_4_0.zip"
-url_modscan="http://modscan.googlecode.com/svn/trunk/modscan.py"
-url_plcscan_base="http://plcscan.googlecode.com/svn/trunk"
+url_modscan="https://raw.githubusercontent.com/moki-ics/modscan/master/modscan.py"
+url_plcscan_base="https://raw.githubusercontent.com/moki-ics/plcscan/master"
 url_codesys_base="$url_moki_base/mirror/digital-bond-codesys"
 git_s7metasploit="https://github.com/moki-ics/s7-metasploit-modules.git"
 
@@ -19,7 +18,6 @@ desktop_apps="/usr/share/applications"
 nmap_scripts="/usr/share/nmap/scripts"
 
 wget="wget --no-check-certificate --quiet"
-git_clone="git clone"
 add_to_moki="xdg-desktop-menu install --novendor --mode system $kali_directory_path $moki_directory_path"
 
 ##################################################
@@ -46,7 +44,9 @@ Usage: setup.sh [options]
     Options:
         -h | --help     This message
         -v | --verbose  Script works in verbose mode
-        --all           Installs all the below
+        --all           Installs all tools
+        --offensive     Installs all offensive tools
+        --defensive     Installs all defensive tools
         --quickdraw     Installs snort and Digital Bond's ICS snort Rules
         --plcsan        Installs PLCscan script
         --codesys       Installs CoDeSys Runtime exploit script
@@ -65,6 +65,19 @@ EOF
         modscan_install=true
         plcscan_install=true
         s7metasploit_install=true
+        snort_install=true
+        shift
+        ;;
+    --offensive )
+        do_update=true
+        codesys_install=true
+        modscan_install=true
+        plcscan_install=true
+        s7metasploit_install=true
+        shift
+        ;;
+    --defensive )
+        do_update=true
         snort_install=true
         shift
         ;;
@@ -164,19 +177,14 @@ if $snort_install ; then
     snort_rules_dir="/etc/snort/rules"
 
     echo "# Downloading rules..."
-    $git_clone $url_quickdraw
-    
-    #$wget $url_quickdraw -O quickdraw.zip
-    #unzip quickdraw.zip
+    if ! git clone "$url_quickdraw"; then
+        echo "-> Error: could not get $url_quickdraw" >&2
+        exit 1
+    fi
+    quickdraw_dir="$dir/quickdraw"
 
     echo "# Copying Quickdraw SCADA rules to the rules directory..."
-    cd quickdraw
-    cat all-quickdraw.rules >> $snort_rules_dir/local.rules
-   
-    #cp dnp3*.rules $snort_rules_dir/dnp3.rules
-    #cp modbus*.rules $snort_rules_dir/modbus.rules
-    #cp enip_cip*.rules $snort_rules_dir/enip_cip.rules
-    #cp vulnerability*.rules $snort_rules_dir/vulnerability.rules
+    cp $quickdraw_dir/all-quickdraw.rules $snort_rules_dir/all-quickdraw.rules
 
     snort_rules_file="/etc/snort/snort.conf"
     if ! grep "Moki" $snort_rules_file; then
@@ -187,34 +195,26 @@ if $snort_install ; then
 #-----------------------------
 # Moki SCADA Variables
 #-----------------------------
-#Older version of Snort need these
-ipvar MODBUS_CLIENT $HOME_NET
-ipvar MODBUS_SERVER $HOME_NET
-ipvar ENIP_CLIENT $HOME_NET
-ipvar ENIP_SERVER $HOME_NET
-ipvar DNP3_CLIENT $HOME_NET
-ipvar DNP3_SERVER $HOME_NET
-portvar DNP3_PORTS 20000
-################################
-#Need to import these to Snort 2.9.7.3 and newer
+# for Snort 2.9.7.3 and Quickdraw v1.3, use these:
 ipvar MODICON_CLIENT $HOME_NET
 ipvar BACNET_CLIENT $HOME_NET
 ipvar FINS_CLIENT $HOME_NET
 ipvar FINS_SERVER $HOME_NET
 ipvar S7_SERVER $HOME_NET
 ipvar S7_CLIENT $HOME_NET
+ipvar MODBUS_CLIENT $HOME_NET
+ipvar MODBUS_SERVER $HOME_NET
+ipvar DNP3_CLIENT $HOME_NET
+ipvar DNP3_SERVER $HOME_NET
+portvar DNP3_PORTS 20000
+# for Quickdraw prior to v1.3, use these too:
+#ipvar ENIP_CLIENT $HOME_NET
+#ipvar ENIP_SERVER $HOME_NET
 
-# Since all rules are now in local.rules this can be ignored
-# in Snort 2.9.7.3 and newer
 #-----------------------------
 # Moki SCADA Rules
-#     Only adding Modbus/TCP rules, due to missing 
-#     variables in other rules from missing preprocessors.
 #-----------------------------
-#include $RULE_PATH/all-quickdraw.rules
-#include $RULE_PATH/dnp3.rules
-#include $RULE_PATH/enip_cip.rules
-#include $RULE_PATH/vulnerability.rules
+include $RULE_PATH/all-quickdraw.rules
 ## [Moki end]
 EOF
     fi
@@ -224,81 +224,22 @@ EOF
     sed -i "s|ipvar HOME_NET any|ipvar HOME_NET 10.0.0.0/8|" /etc/snort/snort.conf
     
     if [ ! -d $moki_data_dir/pcap ]; then
-        echo "# Installing SCADA PCAP samples from Digital Bond to $moki_data_dir/pcap"
-      #  $wget $url_quickdraw_pcap -O pcap.zip
-       # unzip pcap.zip -d $moki_data_dir/pcap 2>/dev/null 1>/dev/null
-      mkdir $moki_data_dir/pcap
-      cp *.pcap $moki_data_dir/pcap
+        echo "# Installing SCADA pcap samples from Digital Bond to $moki_data_dir/pcap"
+        mkdir $moki_data_dir/pcap
+        cp $quickdraw_dir/*.pcap $moki_data_dir/pcap
     fi
 fi
 
 if $snort_test ; then
     snort_rules_file="/etc/snort/snort.conf"
-    #Need to work this so that it tests for all the pcaps
-    pcap_modbus_part1="modbus_test_data_part1.pcap"
-    pcap_modbus_part2="modbus_test_data_part2.pcap"
-    pcap_bacnet="bacnet_test.pcap"
-    pcap_dnp3_part1="dnp3_test_data_part1.pcap"
-    pcap_dnp3_part2="dnp3_test_data_part2.pcap"
-    pcap_enip="enip_test.pcap"
-    pcap_fox="fox_info.pcap"
-    pcap_modicon="modicon_test.pcap"
-    pcap_omron="omron_test.pcap"
-    pcap_s7="s7_test.pcap"
 
     if ! which snort; then
         echo "-> Error: snort not installed" >&2
         exit 1
     fi
-    cd $moki_data_dir/pcap
-    
-    if [ ! -f $pcap_modbus_part1 ]; then
-        echo "-> Error: $pcap_modbus_part1 missing" >&2
-        exit 1
-    fi
 
-    if [ ! -f $pcap_modbus_part2 ]; then
-        echo "-> Error: $pcap_modbus_part2 missing" >&2
-        exit 1
-    fi
-
-    if [ ! -f $pcap_bacnet ]; then
-        echo "-> Error: $pcap_bacnet missing" >&2
-        exit 1
-    fi
-
-    if [ ! -f $pcap_dnp3_part1 ]; then
-        echo "-> Error: $pcap_dnp3_part1 missing" >&2
-        exit 1
-    fi
-
-    if [ ! -f $pcap_dnp3_part2 ]; then
-        echo "-> Error: $pcap_dnp3_part2 missing" >&2
-        exit 1
-    fi
-
-    if [ ! -f $pcap_enip ]; then
-        echo "-> Error: $pcap_enip missing" >&2
-        exit 1
-    fi
-
-    if [ ! -f $pcap_fox ]; then
-        echo "-> Error: $pcap_fox missing" >&2
-        exit 1
-    fi
-
-    if [ ! -f $pcap_modicon ]; then
-        echo "-> Error: $pcap_modicon missing" >&2
-        exit 1
-    fi
-
-    if [ ! -f $pcap_omron ]; then
-        echo "-> Error: $pcap_omron missing" >&2
-        exit 1
-    fi
-
-    if [ ! -f $pcap_s7 ]; then
-        echo "-> Error: $pcap_s7 missing" >&2
+    if [ ! -d $moki_data_dir/pcap ]; then
+        echo "-> Error: pcap files not found" >&2
         exit 1
     fi
 
@@ -310,139 +251,171 @@ if $snort_test ; then
         exit 1
     fi
 
-    echo "# Running test..."
+    echo "# Running tests..."
     logdir="/tmp/moki"
-    logfile_bacnet="$logdir"/backnet.out
-    logfile_dnp3_p1="$logdir"/dnp3_p1.out
-    logfile_dnp3_p2="$logdir"/dnp3_p2.out
-    logfile_enip="$logdir"/enip.out
-    logfile_fox="$logdir"/fox.out
-    logfile_modbus_p1="$logdir"/modbus_p1.out
-    logfile_modbus_p2="$logdir"/modus_p2.out
-    logfile_modicon="$logdir"/modicon.out
-    logfile_omron="$logdir"/omron.out
-    logfile_s7="$logdir"/s7.out
-
     rm -rf "$logdir"
     mkdir "$logdir"
-    echo "$logfile"
 
-    snort -c "$snort_rules_file" -l "$logdir" --pcap-single "$pcap_bacnet" 2>"$logfile_bacnet" 1>"$logfile_bacnet"
+    for pcapfile in $moki_data_dir/pcap/*.pcap
+    do
+        pcapname=`basename "$pcapfile"`
+        logfile="$logdir"/"$pcapname".out
+        snort -c "$snort_rules_file" -l "$logdir" --pcap-single "$pcapfile" 2>"$logfile" 1>"$logfile"
+    done
 
-    snort -c "$snort_rules_file" -l "$logdir" --pcap-single "$pcap_dnp3_part1" 2>"$logfile_dnp3_p1" 1>"$logfile_dnp3_p1"
+    echo "# Checking alerts..."
+    testlog="$logdir"/bacnet_test.pcap.out
+    if [ ! -f "$testlog" ]; then
+        echo "-> Error: $testlog missing" >&2
+    else
+        if ! grep "Snort processed 26 packets" "$testlog"; then
+            echo "-> Error: packets missing from $testlog" >&2
+        fi
+        if ! grep "Alerts: * 13 " "$testlog"; then
+            echo "-> Error: alerts missing from $testlog" >&2
+        fi
+        if ! grep "Logged: * 13 " "$testlog"; then
+            echo "-> Error: logged events missing from $testlog" >&2
+        fi
+    fi
 
-    snort -c "$snort_rules_file" -l "$logdir" --pcap-single "$pcap_dnp3_part2" 2>"$logfile_dnp3_p2" 1>"$logfile_dnp3_p2"
+    testlog="$logdir"/dnp3_test_data_part1.pcap.out
+    if [ ! -f "$testlog" ]; then
+        echo "-> Error: $testlog missing" >&2
+    else
+        if ! grep "Snort processed 181 packets" "$testlog"; then
+            echo "-> Error: packets missing from $testlog" >&2
+        fi
+        if ! grep "Alerts: * 116 " "$testlog"; then
+            echo "-> Error: alerts missing from $testlog" >&2
+        fi
+        if ! grep "Logged: * 116 " "$testlog"; then
+            echo "-> Error: logged events missing from $testlog" >&2
+        fi
+    fi
 
-    snort -c "$snort_rules_file" -l "$logdir" --pcap-single "$pcap_enip" 2>"$logfile_enip" 1>"$logfile_enip"
+    testlog="$logdir"/dnp3_test_data_part2.pcap.out
+    if [ ! -f "$testlog" ]; then
+        echo "-> Error: $testlog missing" >&2
+    else
+        if ! grep "Snort processed 33 packets" "$testlog"; then
+            echo "-> Error: packets missing from $testlog" >&2
+        fi
+        if ! grep "Alerts: * 0 " "$testlog"; then
+            echo "-> Error: alerts missing from $testlog" >&2
+        fi
+        if ! grep "Logged: * 0 " "$testlog"; then
+            echo "-> Error: logged events missing from $testlog" >&2
+        fi
+    fi
 
-    snort -c "$snort_rules_file" -l "$logdir" --pcap-single "$pcap_fox" 2>"$logfile_fox" 1>"$logfile_fox"
+    testlog="$logdir"/enip_test.pcap.out
+    if [ ! -f "$testlog" ]; then
+        echo "-> Error: $testlog missing" >&2
+    else
+        if ! grep "Snort processed 11 packets" "$testlog"; then
+            echo "-> Error: packets missing from $testlog" >&2
+        fi
+        if ! grep "Alerts: * 0 " "$testlog"; then
+            echo "-> Error: alerts missing from $testlog" >&2
+        fi
+        if ! grep "Logged: * 0 " "$testlog"; then
+            echo "-> Error: logged events missing from $testlog" >&2
+        fi
+    fi
 
-    snort -c "$snort_rules_file" -l "$logdir" --pcap-single "$pcap_modbus_part1" 2>"$logfile_modbus_p1" 1>"$logfile_modbus_p1"
+    testlog="$logdir"/fox_info.pcap.out
+    if [ ! -f "$testlog" ]; then
+        echo "-> Error: $testlog missing" >&2
+    else
+        if ! grep "Snort processed 10 packets" "$testlog"; then
+            echo "-> Error: packets missing from $testlog" >&2
+        fi
+        if ! grep "Alerts: * 1 " "$testlog"; then
+            echo "-> Error: alerts missing from $testlog" >&2
+        fi
+        if ! grep "Logged: * 1 " "$testlog"; then
+            echo "-> Error: logged events missing from $testlog" >&2
+        fi
+    fi
 
-    snort -c "$snort_rules_file" -l "$logdir" --pcap-single "$pcap_modbus_part2" 2>"$logfile_modbus_p2" 1>"$logfile_modbus_p2"
+    testlog="$logdir"/modbus_test_data_part1.pcap.out
+    if [ ! -f "$testlog" ]; then
+        echo "-> Error: $testlog missing" >&2
+    else
+        if ! grep "Snort processed 118 packets" "$testlog"; then
+            echo "-> Error: packets missing from $testlog" >&2
+        fi
+        if ! grep "Alerts: * 20 " "$testlog"; then
+            echo "-> Error: alerts missing from $testlog" >&2
+        fi
+        if ! grep "Logged: * 20 " "$testlog"; then
+            echo "-> Error: logged events missing from $testlog" >&2
+        fi
+    fi
 
-    snort -c "$snort_rules_file" -l "$logdir" --pcap-single "$pcap_modicon" 2>"$logfile_modicon" 1>"$logfile_modicon"
+    testlog="$logdir"/modbus_test_data_part2.pcap.out
+    if [ ! -f "$testlog" ]; then
+        echo "-> Error: $testlog missing" >&2
+    else
+        if ! grep "Snort processed 350 packets" "$testlog"; then
+            echo "-> Error: packets missing from $testlog" >&2
+        fi
+        if ! grep "Alerts: * 0 " "$testlog"; then
+            echo "-> Error: alerts missing from $testlog" >&2
+        fi
+        if ! grep "Logged: * 0 " "$testlog"; then
+            echo "-> Error: logged events missing from $testlog" >&2
+        fi
+    fi
 
-    snort -c "$snort_rules_file" -l "$logdir" --pcap-single "$pcap_omron" 2>"$logfile_omron" 1>"$logfile_omron"
+    testlog="$logdir"/modicon_test.pcap.out
+    if [ ! -f "$testlog" ]; then
+        echo "-> Error: $testlog missing" >&2
+    else
+        if ! grep "Snort processed 191 packets" "$testlog"; then
+            echo "-> Error: packets missing from $testlog" >&2
+        fi
+        if ! grep "Alerts: * 0 " "$testlog"; then
+            echo "-> Error: alerts missing from $testlog" >&2
+        fi
+        if ! grep "Logged: * 0 " "$testlog"; then
+            echo "-> Error: logged events missing from $testlog" >&2
+        fi
+    fi
 
-    snort -c "$snort_rules_file" -l "$logdir" --pcap-single "$pcap_s7" 2>"$logfile_s7" 1>"$logfile_s7"
+    testlog="$logdir"/omron_test.pcap.out
+    if [ ! -f "$testlog" ]; then
+        echo "-> Error: $testlog missing" >&2
+    else
+        if ! grep "Snort processed 18 packets" "$testlog"; then
+            echo "-> Error: packets missing from $testlog" >&2
+        fi
+        if ! grep "Alerts: * 2 " "$testlog"; then
+            echo "-> Error: alerts missing from $testlog" >&2
+        fi
+        if ! grep "Logged: * 2 " "$testlog"; then
+            echo "-> Error: logged events missing from $testlog" >&2
+        fi
+    fi
 
+    testlog="$logdir"/s7_test.pcap.out
+    if [ ! -f "$testlog" ]; then
+        echo "-> Error: $testlog missing" >&2
+    else
+        if ! grep "Snort processed 39 packets" "$testlog"; then
+            echo "-> Error: packets missing from $testlog" >&2
+        fi
+        if ! grep "Alerts: * 0" "$testlog"; then
+            echo "-> Error: alerts missing from $testlog" >&2
+        fi
+        if ! grep "Logged: * 0" "$testlog"; then
+            echo "-> Error: logged events missing from $testlog" >&2
+        fi
+    fi
 
-cd $logdir
-
-    echo "# Checking alerts"
-    if ! grep "Snort processed" "$logfile_bacnet"; then
-        echo "-> Error: packets missing" >&2
-    fi
-    if ! grep "Alerts:" "$logfile_bacnet"; then
-        echo "-> Error: alerts missing" >&2
-    fi
-    if ! grep "Logged:" "$logfile_bacnet"; then
-        echo "-> Error: logged events missing" >&2
-    fi
-    if ! grep "Snort processed" "$logfile_dnp3_p1"; then
-        echo "-> Error: packets missing" >&2
-    fi
-    if ! grep "Alerts:" "$logfile_bacnet_dnp3_p1"; then
-        echo "-> Error: alerts missing" >&2
-    fi
-    if ! grep "Logged:" "$logfile_bacnet_dnp3_p1"; then
-        echo "-> Error: logged events missing" >&2
-    fi
-    if ! grep "Snort processed" "$logfile_dnp3_p2"; then
-        echo "-> Error: packets missing" >&2
-    fi
-    if ! grep "Alerts:" "$logfile_dnp3_p2"; then
-        echo "-> Error: alerts missing" >&2
-    fi
-    if ! grep "Logged:" "$logfile_dnp3_p2"; then
-        echo "-> Error: logged events missing" >&2
-    fi
-    if ! grep "Snort processed" "$logfile_enip"; then
-        echo "-> Error: packets missing" >&2
-    fi
-    if ! grep "Alerts:" "$logfile_bacnet_enip"; then
-        echo "-> Error: alerts missing" >&2
-    fi
-    if ! grep "Logged:" "$logfile_bacnet_enip"; then
-        echo "-> Error: logged events missing" >&2
-    fi
-    if ! grep "Snort processed" "$logfile_fox"; then
-        echo "-> Error: packets missing" >&2
-    fi
-    if ! grep "Alerts:" "$logfile_fox"; then
-        echo "-> Error: alerts missing" >&2
-    fi
-    if ! grep "Logged:" "$logfile_fox"; then
-        echo "-> Error: logged events missing" >&2
-    fi
-    if ! grep "Snort processed" "$logfile_modbus_p1"; then
-        echo "-> Error: packets missing" >&2
-    fi
-    if ! grep "Alerts:" "$logfile_modbus_p1"; then
-        echo "-> Error: alerts missing" >&2
-    fi
-    if ! grep "Logged:" "$logfile_modbus_p1"; then
-        echo "-> Error: logged events missing" >&2
-    fi
-    if ! grep "Snort processed" "$logfile_modbus_p2"; then
-        echo "-> Error: packets missing" >&2
-    fi
-    if ! grep "Alerts:" "$logfile_modbus_p2"; then
-        echo "-> Error: alerts missing" >&2
-    fi
-    if ! grep "Logged:" "$logfile_modbus_p2"; then
-        echo "-> Error: logged events missing" >&2
-    fi
-    if ! grep "Snort processed" "$logfile_modicon"; then
-        echo "-> Error: packets missing" >&2
-    fi
-    if ! grep "Alerts:" "$logfile_modicon"; then
-        echo "-> Error: alerts missing" >&2
-    fi
-    if ! grep "Logged:" "$logfile_modicon"; then
-        echo "-> Error: logged events missing" >&2
-    fi
-    if ! grep "Snort processed" "$logfile_omron"; then
-        echo "-> Error: packets missing" >&2
-    fi
-    if ! grep "Alerts:" "$logfile_omron"; then
-        echo "-> Error: alerts missing" >&2
-    fi
-    if ! grep "Logged:" "$logfile_omron"; then
-        echo "-> Error: logged events missing" >&2
-    fi
-    if ! grep "Snort processed" "$logfile_s7"; then
-        echo "-> Error: packets missing" >&2
-    fi
-    if ! grep "Alerts:" "$logfile_s7"; then
-        echo "-> Error: alerts missing" >&2
-    fi
-    if ! grep "Logged:" "$logfile_s7"; then
-        echo "-> Error: logged events missing" >&2
-    fi
-    echo "# I think everything worked out ok. See these files for details:"
-    ls -al
+    echo "# If there are any errors above, see $logdir for details:"
+    ls -al "$logdir"
 fi
 
 
