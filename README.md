@@ -21,6 +21,7 @@ Current Tools
 - [PLC Scan] from Dmitry Efanov
 - [Modscan] from Mark Bristow
 - [Siemens S7 metasploit] modules from Dillon Beresford
+- [Siemens S7 wireshark dissector] from Thomas Wiens
 
 
 
@@ -31,3 +32,4 @@ Current Tools
 [PLC Scan]: http://plcscan.googlecode.com
 [Modscan]: https://code.google.com/p/modscan/
 [Siemens S7 metasploit]: https://github.com/moki-ics/s7-metasploit-modules
+[Siemens S7 wireshark dissector]: http://sourceforge.net/projects/s7commwireshark/

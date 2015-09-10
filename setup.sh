@@ -2,13 +2,15 @@
 
 url_moki_base="https://raw.githubusercontent.com/moki-ics/moki/master"
 url_background="$url_moki_base/images/moki.jpg"
-url_quickdraw="https://github.com/digitalbond/quickdraw"
+
+git_quickdraw="https://github.com/digitalbond/quickdraw"
 url_modscan="https://raw.githubusercontent.com/moki-ics/modscan/master/modscan.py"
 url_plcscan_base="https://raw.githubusercontent.com/moki-ics/plcscan/master"
 url_codesys_base="$url_moki_base/mirror/digital-bond-codesys"
+url_wireshark="https://1.na.dl.wireshark.org/src/wireshark-1.12.7.tar.bz2"
 git_s7metasploit="https://github.com/moki-ics/s7-metasploit-modules.git"
+git_s7wireshark="https://github.com/moki-ics/s7commwireshark.git"
 
-moki_bin_directory="/root/Desktop"
 moki_data_dir="/usr/local/share/moki"
 meta_module_dir="/usr/share/metasploit-framework/modules/exploits"
 moki_directory_path="/usr/share/desktop-directories/Moki.directory"
@@ -30,6 +32,7 @@ plcscan_install=false
 s7metasploit_install=false
 snort_install=false
 snort_test=false  # TODO: remove option, turn into shortcut
+s7wireshark_install=false
 
 ### Check Inputs ###
 while true; do
@@ -50,6 +53,7 @@ Usage: setup.sh [options]
         --plcsan        Installs PLCscan script
         --codesys       Installs CoDeSys Runtime exploit script
         --modscan       Installs ModScan script
+        --s7wireshark   Installs the S7comm wireshark dissector
 EOF
         exit 0
         shift
@@ -65,6 +69,7 @@ EOF
         plcscan_install=true
         s7metasploit_install=true
         snort_install=true
+        s7wireshark_install=true
         shift
         ;;
     --offensive )
@@ -73,6 +78,7 @@ EOF
         modscan_install=true
         plcscan_install=true
         s7metasploit_install=true
+        s7wireshark_install=true
         shift
         ;;
     --defensive )
@@ -99,6 +105,11 @@ EOF
         ;;
     --s7-metasploit )
         s7metasploit_install=true
+        shift
+        ;;
+    --s7wireshark )
+        do_update=true
+        s7wireshark_install=true
         shift
         ;;
     --snort-test )
@@ -146,6 +157,8 @@ if $do_update ; then
         cat >> /etc/apt/sources.list << "EOF"
 
 ## [Moki start]
+deb http://http.us.debian.org/debian testing main non-free contrib
+deb-src http://http.us.debian.org/debian testing main non-free contrib
 deb http://http.kali.org/kali kali main non-free contrib
 deb-src http://http.kali.org/kali main non-free contrib
 deb-src http://security.kali.org/kali-security kali/updates main contrib non-free
@@ -156,8 +169,8 @@ EOF
     echo "# Updating apt-get & Upgrading all packages... "
     apt-get clean 2>/dev/null 1>/dev/null
     apt-get update -y --force-yes
-    apt-get upgrade -y --force-yes
-    apt-get dist-upgrade -y --force-yes
+    # apt-get upgrade -y --force-yes
+    # apt-get dist-upgrade -y --force-yes
 fi
 
 
@@ -176,8 +189,8 @@ if $snort_install ; then
     snort_rules_dir="/etc/snort/rules"
 
     echo "# Downloading rules..."
-    if ! git clone "$url_quickdraw"; then
-        echo "-> Error: could not get $url_quickdraw" >&2
+    if ! git clone "$git_quickdraw"; then
+        echo "-> Error: could not get $git_quickdraw" >&2
         exit 1
     fi
     quickdraw_dir="$dir/quickdraw"
@@ -545,6 +558,89 @@ if $s7metasploit_install ; then
     mkdir -p "$meta_module_dir/simatic"
     if ! mv s7-metasploit-modules/*.rb "$meta_module_dir/simatic"; then
         echo "-> Error: could not put files into $meta_module_dir" >&2
+        exit 1
+    fi
+fi
+
+
+##################################################
+# s7comm wireshark dissector
+##################################################
+
+if $s7wireshark_install ; then
+    echo "# Installing wireshark plugin dependencies..."
+    apt-get install -y build-essential bison flex \
+    libtool libtool-bin autoconf \
+    libpcap-dev
+    # libgtk-3-dev qt-sdk # we don't need these if we don't build the GUI
+fi
+
+if $s7wireshark_install ; then
+    cwd=`pwd`
+    echo "# Installing a wireshark plugin for the Siemens S7comm protocol:"
+    if ! which wireshark; then
+        echo "-> Error: wireshark not installed" >&2
+        exit 1
+    fi
+
+    # grab the plugin code
+    if ! git clone "$git_s7wireshark"; then
+        echo "-> Error: could not get $git_s7wireshark" >&2
+        exit 1
+    fi
+
+    # grab the wireshark code
+    if ! $wget $url_wireshark; then
+        echo "-> Error: could not get $url_wireshark" >&2
+        exit 1
+    fi
+    tar xf wireshark-*
+    wireshark_dir=`find . -type d -name "wireshark-*"`
+    if [ x"$wireshark_dir" = x ]; then
+        echo "-> Error: unpacking wireshark didn't seem to work " >&2
+        exit 1
+    fi
+
+    # figure out the plugin destination
+    plugins_dir=`find /usr/lib -type d -regex ".*/wireshark/plugins/.*"`
+    if [ ! -d "$plugins_dir" ]; then
+        plugins_dir="/usr/share/wireshark/plugins"
+        mkdir -p $plugins_dir
+    fi
+
+    # copy plugin code to the wireshark source directory
+    cp -R s7commwireshark/src/* $wireshark_dir/plugins
+
+    # build wireshark (no GUI) just to be able to build the plugin libraries
+    # then install the libraries to the plugin destination
+    cd $wireshark_dir
+    ./autogen.sh
+    ./configure --enable-wireshark=No
+
+    make -C plugins/s7comm all
+    plugin="plugins/s7comm/.libs/s7comm.so"
+    if [ ! -f "$plugin" ]; then
+        echo "-> Error: $plugin missing" >&2
+        exit 1
+    fi
+    cp $plugin $plugins_dir
+
+    make -C plugins/s7comm_plus all
+    plugin="plugins/s7comm_plus/.libs/s7comm_plus.so"
+    if [ ! -f "$plugin" ]; then
+        echo "-> Error: $plugin missing" >&2
+        exit 1
+    fi
+    cp $plugin $plugins_dir
+    cd $pwd
+
+    # check that tshark detects the plugins are installed correctly
+    echo "# Checking plugins are installed"
+    s7plug1=`tshark -G plugins 2>/dev/null | grep s7comm.so`
+    s7plug2=`tshark -G plugins 2>/dev/null | grep s7comm_plus.so`
+    if [ x"$s7plug1" = x ] || [ x"$s7plug2" = x ]; then
+        tshark -G plugins >&2
+        echo "-> Error: wireshark plugins don't appear to have been installed properly" >&2
         exit 1
     fi
 fi
