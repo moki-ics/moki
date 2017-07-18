@@ -7,7 +7,7 @@ git_quickdraw="https://github.com/digitalbond/quickdraw"
 url_modscan="https://raw.githubusercontent.com/moki-ics/modscan/master/modscan.py"
 url_plcscan_base="https://raw.githubusercontent.com/moki-ics/plcscan/master"
 url_codesys_base="$url_moki_base/mirror/digital-bond-codesys"
-url_wireshark="https://1.na.dl.wireshark.org/src/wireshark-1.12.7.tar.bz2"
+url_wireshark="https://1.na.dl.wireshark.org/src/wireshark-2.2.7.tar.bz2"
 git_s7metasploit="https://github.com/moki-ics/s7-metasploit-modules.git"
 git_s7wireshark="https://github.com/moki-ics/s7commwireshark.git"
 
